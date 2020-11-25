@@ -37,6 +37,7 @@ pip-selfcheck.json
 !.vscode/tasks.json
 !.vscode/launch.json
 *.code-workspace
+media
 
 ### VisualStudioCode Patch ###
 # Ignore all local history of files

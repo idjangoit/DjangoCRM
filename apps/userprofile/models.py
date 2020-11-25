@@ -8,9 +8,9 @@ class Profile(models.Model):
     """Model definition for Profile."""
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(max_length=500, blank=True)
-    phone_number = models.CharField(max_length=12, blank=True)
+    phone_number = models.CharField(max_length=15, blank=True)
     birth_date = models.DateField(null=True, blank=True)
-    # TODO: Define fields here
+    profile_image = models.ImageField(default='default-avatar.png', upload_to='users/', null=True, blank=True)
 
     def __str__(self):
         return self.user.get_full_name()
