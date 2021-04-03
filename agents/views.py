@@ -1,10 +1,13 @@
+import random
 from django.views import generic
 from django.shortcuts import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from leads.models import Agent
 from .forms import AgentModelForm
+from .mixins import OrganizerAndLoginRequiredMixin
+from django.core.mail import send_mail
 
-class AgentListView(LoginRequiredMixin, generic.ListView):
+class AgentListView(OrganizerAndLoginRequiredMixin, generic.ListView):
     template_name = "agents/agent_list.html"
 
     def get_queryset(self):
@@ -12,7 +15,7 @@ class AgentListView(LoginRequiredMixin, generic.ListView):
         return Agent.objects.filter(organization=organization)
 
 
-class AgentCreateView(LoginRequiredMixin, generic.CreateView):
+class AgentCreateView(OrganizerAndLoginRequiredMixin, generic.CreateView):
     template_name = "agents/agent_create.html"
     form_class = AgentModelForm
 
@@ -21,13 +24,27 @@ class AgentCreateView(LoginRequiredMixin, generic.CreateView):
 
     #Overriding the form save method like
     def form_valid(self, form):
-        agent = form.save(commit=False)
-        agent.organization = self.request.user.userprofile
-        agent.save()
+        user = form.save(commit=False)
+        user.is_agent = True
+        user.is_organizor = False
+        user.set_password(f"{random.randint(0,1000000)}")
+        user.save()
+        Agent.objects.create(
+            user=user,
+            organization=self.request.user.userprofile
+        )
+        send_mail(
+            subject="You are invited to be an Agent",
+            message="Your account has been created in the CRM system as an agent.\nPlease login to start working.\n\nThank you,\nCRM Admin Team",
+            from_email='admin@crm.com', 
+            recipient_list=[user.email]
+        )
+        #agent.organization = self.request.user.userprofile
+        #agent.save()
         return super(AgentCreateView, self).form_valid(form)
 
 
-class AgentDetailView(LoginRequiredMixin, generic.DetailView):
+class AgentDetailView(OrganizerAndLoginRequiredMixin, generic.DetailView):
     template_name = "agents/agent_detail.html"
     #context_object_name = agent 
 
@@ -36,7 +53,7 @@ class AgentDetailView(LoginRequiredMixin, generic.DetailView):
         return Agent.objects.filter(organization=organization)
 
 
-class AgentUpdateView(LoginRequiredMixin, generic.UpdateView):
+class AgentUpdateView(OrganizerAndLoginRequiredMixin, generic.UpdateView):
     template_name = "agents/agent_update.html"
     form_class = AgentModelForm 
 
@@ -48,7 +65,7 @@ class AgentUpdateView(LoginRequiredMixin, generic.UpdateView):
         return reverse('agents:agent-list')
 
 
-class AgentDeleteView(LoginRequiredMixin, generic.DeleteView):
+class AgentDeleteView(OrganizerAndLoginRequiredMixin, generic.DeleteView):
     template_name = 'leads/lead_delete.html'
     
     def get_queryset(self):

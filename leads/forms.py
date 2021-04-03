@@ -1,5 +1,5 @@
 from django import forms
-from .models import Lead, User
+from .models import Lead, User, Agent
 from django.contrib.auth.forms import UserCreationForm
 
 class LeadModelForm(forms.ModelForm):
@@ -23,3 +23,17 @@ class SignUpForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2', )
+
+class AssignAgentForm(forms.Form):
+    agent = forms.ModelChoiceField(queryset=Agent.objects.none())
+    
+    # With this method we are refreshing the agents based on the request user.
+    # We are not hardcoding it.
+
+    def __init__(self, *args, **kwargs):
+        request = kwargs.pop("request")
+        #print(request.user)
+        agents = Agent.objects.filter(organization=request.user.userprofile)
+        super(AssignAgentForm, self).__init__(*args, **kwargs)
+        self.fields["agent"].queryset = agents
+    
