@@ -66,7 +66,7 @@ class AgentUpdateView(OrganizerAndLoginRequiredMixin, generic.UpdateView):
 
 
 class AgentDeleteView(OrganizerAndLoginRequiredMixin, generic.DeleteView):
-    template_name = 'leads/lead_delete.html'
+    template_name = 'agents/agent_delete.html'
     
     def get_queryset(self):
         organization = self.request.user.userprofile

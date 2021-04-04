@@ -13,6 +13,18 @@ class UserProfile(models.Model):
         return self.user.username
 
 
+class Lead(models.Model):
+    first_name = models.CharField(max_length=20)
+    last_name = models.CharField(max_length=20)
+    age = models.IntegerField(default=0)
+    organization = models.ForeignKey(UserProfile, on_delete=models.CASCADE) 
+    agent = models.ForeignKey("Agent", null=True, blank=True, on_delete=models.SET_NULL)
+    category = models.ForeignKey("Category", related_name="leads", null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}" 
+
+
 class Agent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     organization = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
@@ -20,16 +32,16 @@ class Agent(models.Model):
     def __str__(self):
         return self.user.email
 
-
-class Lead(models.Model):
-    first_name = models.CharField(max_length=20)
-    last_name = models.CharField(max_length=20)
-    age = models.IntegerField(default=0)
-    organization = models.ForeignKey(UserProfile, on_delete=models.CASCADE) 
-    agent = models.ForeignKey(Agent, null=True, blank=True, on_delete=models.SET_NULL)
+class Category(models.Model):
+    name = models.CharField(max_length=50)
+    organization = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    
+    class Meta:
+        verbose_name_plural = ("Categories")
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}" 
+        return self.name
+
 
 
 def post_user_create_signal(sender, instance, created, **kwargs):
